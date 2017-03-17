@@ -114,3 +114,56 @@
 (assert getNewDataSourceSwipeableListView)
 (assert Platform)
 (assert OS)
+
+(def action-sheet-provider (r/adapt-react-class ActionSheetProvider))
+(def action-sheet (r/adapt-react-class ActionSheet))
+(def keyboard-aware-scroll-view (r/adapt-react-class KeyboardAwareScrollView))
+(def blur-view (r/adapt-react-class BlurView))
+(def vibrancy-view (r/adapt-react-class VibrancyView))
+(def touchable (r/adapt-react-class TouchableNativeFeedbackSafe))
+(def date-picker (r/adapt-react-class DatePicker))
+(def material-icon (r/adapt-react-class MaterialIcons))
+(def font-awesome (r/adapt-react-class FontAwesome))
+(def slider (r/adapt-react-class Slider))
+(def text (r/adapt-react-class Text))
+(def text-input (r/adapt-react-class TextInput))
+(def view (r/adapt-react-class View))
+(def image (r/adapt-react-class Image))
+(def scroll-view (r/adapt-react-class ScrollView))
+(def touchable-highlight (r/adapt-react-class TouchableHighlight))
+(def touchable-opacity (r/adapt-react-class TouchableOpacity))
+(def modal (r/adapt-react-class Modal))
+(def refresh-control (r/adapt-react-class RefreshControl))
+(def status-bar (r/adapt-react-class StatusBar))
+(def button (r/adapt-react-class Button))
+(def keyboard-avoiding-view (r/adapt-react-class KeyboardAvoidingView))
+(def animated-view (r/adapt-react-class AnimatedView))
+(def animated-image (r/adapt-react-class AnimatedImage))
+(def swipeable-list-view (r/adapt-react-class SwipeableListView))
+(def os OS)
+
+(defn request-permission [permission title message granted not-granted]
+  (let [p (condp = permission
+                 :write-external-storage (-> PermissionsAndroid .-PERMISSIONS .-WRITE_EXTERNAL_STORAGE))]
+    (.then (.request PermissionsAndroid p
+                                        (clj->js {:title title
+                                                  :message message}))
+           (fn request-permission-fn [granted2]
+             (if (= granted2 (-> PermissionsAndroid .-RESULTS .-GRANTED))
+               (granted)
+               (not-granted))))))
+
+(defn linking-open-url [url]
+  (.openURL Linking url))
+
+(defn async-storage-get-item [key callback-fn]
+  (getItemAsyncStorage key callback-fn))
+
+(defn async-storage-set-item [key value callback-fn]
+  (setItemAsyncStorage key value callback-fn))
+
+(defn async-storage-remove-item [key callback-fn]
+  (removeItemAsyncStorage key callback-fn))
+
+(defn app-registry-register-component [a b]
+  (registerComponentAppRegistry a b))
