@@ -158,3 +158,63 @@
 
 (defn app-registry-register-component [a b]
   (registerComponentAppRegistry a b))
+
+
+    ;; animated
+(defn animated-value [a1] (AnimatedValue. (clj->js a1)))
+(defn easing-in-out [a] (inOutEasing a))
+(defn animated-spring [a b] (springAnimated a (clj->js b)))
+(defn animated-timing [a b] (timingAnimated a (clj->js b)))
+(defn animated-decay [a b] (decayAnimated a (clj->js b)))
+(defn animated-parallel [animations] (parallelAnimated (clj->js animations)))
+(defn animated-sequence [animations] (sequenceAnimated (clj->js animations)))
+
+(defn animated-start [a callback-fn]
+  (if callback-fn
+    (startAnimated a callback-fn)
+    (startAnimated a nil)))
+
+(defn interpolate [av input-range output-range]
+  (interpolateAnimatedValue av
+                            (clj->js {:inputRange  input-range
+                                      :outputRange output-range})))
+
+
+(defn keyboard-add-listener [a b]
+  (.addListener Keyboard a (fn keyboard-add-listener-cb [v]
+                             (b (js->clj v :keywordize-keys true)))))
+
+(defn alert [title message options]
+  (alertAlert title message options))
+
+(defn ->ds
+  ([]
+   (->ds {:rowHasChanged           (partial not=)
+          :sectionHeaderHasChanged (partial not=)}))
+  ([options]
+   (let []
+     (new DataSource (clj->js options)))))
+
+(defn ds-row-count [ds]
+  (getRowCountDataSource ds))
+
+(defn get-new-data-source-swipeable-list-view [swipeable-list-view]
+  (new getNewDataSourceSwipeableListView swipeable-list-view))
+
+(defn clone-ds-rows-and-sections [ds rows sections]
+  (cloneWithRowsAndSectionsDataSource ds (clj->js rows) (clj->js sections)))
+
+(defn clone-ds [ds rows]
+  (cloneWithRowsAndSectionsDataSource ds (clj->js rows) nil))
+
+(defn swipeable-list-view-single-section-datasource [row-ids]
+  (let [rows {:s1 (or row-ids '())}
+        sections '(:s1)
+        ds (new SwipeableListViewDataSource (clj->js {:rowHasChanged           (partial not=)
+                                                      :sectionHeaderHasChanged (partial not=)}))]
+    (clone-ds-rows-and-sections ds rows sections)))
+
+(defn swipeable-list-view-datasource [rows sections]
+  (let [ds (new SwipeableListViewDataSource (clj->js {:rowHasChanged           (partial not=)
+                                                      :sectionHeaderHasChanged (partial not=)}))]
+    (clone-ds-rows-and-sections ds rows sections)))
