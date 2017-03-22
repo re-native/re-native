@@ -21,6 +21,7 @@
 (def Text (.-Text react-native))
 (def TextInput (.-TextInput react-native))
 (def View (.-View react-native))
+(def Switch (.-Switch react-native))
 (def Image (.-Image react-native))
 (def ScrollView (.-ScrollView react-native))
 (def ActivityIndicator (.-ActivityIndicator react-native))
@@ -76,7 +77,6 @@
 (assert RefreshControl)
 (assert StatusBar)
 (assert Button)
-(assert ListView)
 (assert KeyboardAvoidingView)
 (assert Keyboard)
 (assert addListenerKeyboard)
@@ -84,6 +84,8 @@
 (assert Text)
 (assert TextInput)
 (assert View)
+(assert Switch)
+(assert ListView)
 (assert Image)
 (assert ScrollView)
 (assert ActivityIndicator)
@@ -119,6 +121,7 @@
 (def text (r/adapt-react-class Text))
 (def text-input (r/adapt-react-class TextInput))
 (def view (r/adapt-react-class View))
+(def list-view (r/adapt-react-class View))
 (def image (r/adapt-react-class Image))
 (def scroll-view (r/adapt-react-class ScrollView))
 (def touchable-highlight (r/adapt-react-class TouchableHighlight))
@@ -129,6 +132,7 @@
 (def button (r/adapt-react-class Button))
 (def keyboard-avoiding-view (r/adapt-react-class KeyboardAvoidingView))
 (def animated-view (r/adapt-react-class AnimatedView))
+(def switch (r/adapt-react-class Switch))
 (def animated-image (r/adapt-react-class AnimatedImage))
 (def swipeable-list-view (r/adapt-react-class SwipeableListView))
 (def os OS)
@@ -163,6 +167,7 @@
     ;; animated
 (defn animated-value [a1] (AnimatedValue. (clj->js a1)))
 (defn easing-in-out [a] (inOutEasing a))
+
 (defn animated-spring [a b] (springAnimated a (clj->js b)))
 (defn animated-timing [a b] (timingAnimated a (clj->js b)))
 (defn animated-decay [a b] (decayAnimated a (clj->js b)))
@@ -218,3 +223,31 @@
   (let [ds (new SwipeableListViewDataSource (clj->js {:rowHasChanged           (partial not=)
                                                       :sectionHeaderHasChanged (partial not=)}))]
     (clone-ds-rows-and-sections ds rows sections)))
+
+(defn list-view-source [v]
+  (let [res #js[]]
+    (doseq [item v]
+      (.push res (clj->js item)))
+    res))
+
+(defn list-view-rows-and-sections-source [kv]
+  (let [res-obj #js{}]
+    (doseq [[k v] kv]
+      (let [res #js[]]
+        (doseq [item v]
+          (.push res (clj->js item)))
+        (aset res-obj k res)
+        res))
+    res-obj))
+
+(defn make-data-source []
+  (ReactNative.ListView.DataSource.
+    #js{:rowHasChanged
+        (fn [a b]
+          false)
+        :sectionHeaderHasChanged
+        (fn [a b]
+          false)}))
+
+(defn clone-with-rows-and-sections [data-source data]
+  (.cloneWithRowsAndSections data-source (list-view-rows-and-sections-source data)))
