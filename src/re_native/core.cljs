@@ -41,6 +41,7 @@
 (def parallelAnimated (.-parallel Animated))
 (def sequenceAnimated (.-sequence Animated))
 (def AsyncStorage (.-AsyncStorage react-native))
+(def multiGetAsyncStorage (.-multiGet AsyncStorage))
 (def getItemAsyncStorage (.-getItem AsyncStorage))
 (def setItemAsyncStorage (.-setItem AsyncStorage))
 (def removeItemAsyncStorage (.-removeItem AsyncStorage))
@@ -68,6 +69,9 @@
 
 (defn cloneWithRowsAndSectionsDataSource [ds rows sections]
   (.cloneWithRowsAndSections ds rows sections))
+
+(defn cloneWithRows [ds rows]
+  (.cloneWithRows ds rows))
 
 (assert react-native)
 (assert SwipeableListViewDataSource)
@@ -107,6 +111,7 @@
 (assert AsyncStorage)
 (assert getItemAsyncStorage)
 (assert setItemAsyncStorage)
+(assert multiGetAsyncStorage)
 (assert removeItemAsyncStorage)
 (assert SwipeableListView)
 (assert Modal)
@@ -121,9 +126,10 @@
 (def text (r/adapt-react-class Text))
 (def text-input (r/adapt-react-class TextInput))
 (def view (r/adapt-react-class View))
-(def list-view (r/adapt-react-class View))
+(def list-view (r/adapt-react-class ListView))
 (def image (r/adapt-react-class Image))
 (def scroll-view (r/adapt-react-class ScrollView))
+(def touchable-without-feedback (r/adapt-react-class TouchableWithoutFeedback))
 (def touchable-highlight (r/adapt-react-class TouchableHighlight))
 (def touchable-opacity (r/adapt-react-class TouchableOpacity))
 (def modal (r/adapt-react-class Modal))
@@ -156,6 +162,9 @@
 
 (defn async-storage-set-item [key value callback-fn]
   (setItemAsyncStorage key value callback-fn))
+
+(defn async-storage-multi-get [keys callback-fn]
+  (multiGetAsyncStorage keys callback-fn))
 
 (defn async-storage-remove-item [key callback-fn]
   (removeItemAsyncStorage key callback-fn))
@@ -210,7 +219,7 @@
   (cloneWithRowsAndSectionsDataSource ds (clj->js rows) (clj->js sections)))
 
 (defn clone-ds [ds rows]
-  (cloneWithRowsAndSectionsDataSource ds (clj->js rows) nil))
+  (cloneWithRows ds (clj->js rows)))
 
 (defn swipeable-list-view-single-section-datasource [row-ids]
   (let [rows {:s1 (or row-ids '())}
@@ -223,31 +232,3 @@
   (let [ds (new SwipeableListViewDataSource (clj->js {:rowHasChanged           (partial not=)
                                                       :sectionHeaderHasChanged (partial not=)}))]
     (clone-ds-rows-and-sections ds rows sections)))
-
-(defn list-view-source [v]
-  (let [res #js[]]
-    (doseq [item v]
-      (.push res (clj->js item)))
-    res))
-
-(defn list-view-rows-and-sections-source [kv]
-  (let [res-obj #js{}]
-    (doseq [[k v] kv]
-      (let [res #js[]]
-        (doseq [item v]
-          (.push res (clj->js item)))
-        (aset res-obj k res)
-        res))
-    res-obj))
-
-(defn make-data-source []
-  (ReactNative.ListView.DataSource.
-    #js{:rowHasChanged
-        (fn [a b]
-          false)
-        :sectionHeaderHasChanged
-        (fn [a b]
-          false)}))
-
-(defn clone-with-rows-and-sections [data-source data]
-  (.cloneWithRowsAndSections data-source (list-view-rows-and-sections-source data)))

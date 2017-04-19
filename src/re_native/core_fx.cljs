@@ -35,7 +35,11 @@
                                        (re/dispatch (conj on-failure err))
                                        (if (nil? result)
                                          (re/dispatch (conj on-failure :result-nil))
-                                         (re/dispatch (conj on-success result))))))))
+                                         (try
+                                          (let [result-clj (js->clj (.parse js/JSON result) :keywordize-keys true)]
+                                            (re/dispatch (conj on-success (js->clj result-clj))))
+                                          (catch js/Error e
+                                            (re/dispatch (conj on-failure :parse-error))))))))))
 
 (re/reg-fx
   :async-storage-set
@@ -44,10 +48,14 @@
                                     on-failure [:async-storage-set-no-on-failure]}}]
     (if (nil? value)
       (re/dispatch (conj on-failure :value-nil))
-      (rn/async-storage-set-item key value (fn async-storage-set-item-cb [err]
-                                             (if err
-                                               (re/dispatch (conj on-failure err))
-                                               (re/dispatch on-success)))))))
+      (try
+       (let [value-str (.stringify js/JSON (clj->js value))]
+        (rn/async-storage-set-item key value-str (fn async-storage-set-item-cb [err]
+                                                  (if err
+                                                    (re/dispatch (conj on-failure err))
+                                                    (re/dispatch on-success)))))
+       (catch js/Error e
+         (re/dispatch (conj on-failure :parse-error)))))))
 
 (re/reg-fx
   :async-storage-remove
